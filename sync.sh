@@ -10,17 +10,22 @@ echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Using bash version: $BASH_VERSION" >> "$l
 
 projectsdir="$HOME/Projects"
 
-clouds=( "$HOME/Google Drive" "$HOME/Box Sync" "$HOME/Cloud Drive" )
+# Each folder listed here will be synced to all clouds
+folders=( "$HOME/Projects" "$HOME/Documents/Taxes" )
+# All folders listed above get synced to all services listed here
+clouds=( "$HOME/Google Drive" "$HOME/Box Sync" "$HOME/Cloud Drive" "$HOME/Dropbox" )
 
-for idx in "${!clouds[@]}"; do
-	if [ ! -d "${clouds[$idx]}/$(basename $projectsdir)" ]; then
-		echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Directory does not exist. Creating ${clouds[$idx]}/$(basename $projectsdir)" >> "$log"
-		mkdir -p "${clouds[$idx]}/$(basename $projectsdir)"
-	fi
-	echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Syncing to cloud: ${clouds[$idx]}" >> "$log"
-	rsync --exclude ".DS_Store" --exclude "*.orig" --exclude "*.bak" \
-		--exclude "._*" --exclude "Thumbs.db" \
-		-av "$projectsdir" "${clouds[$idx]}/" 2>&1 >> $log
+for fIdx in "${!folders[@]}"; do
+	for cIdx in "${!clouds[@]}"; do
+		if [ ! -d "${clouds[$cIdx]}/$(basename ${folders[$fIdx]})" ]; then
+			echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Directory does not exist. Creating ${clouds[$cIdx]}/$(basename ${folders[$fIdx]})" >> "$log"
+			mkdir -p "${clouds[$cIdx]}/$(basename ${folders[$fIdx]})"
+		fi
+		echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Syncing to cloud: ${clouds[$cIdx]}" >> "$log"
+		rsync --exclude ".DS_Store" --exclude "*.orig" --exclude "*.bak" \
+			--exclude "._*" --exclude "Thumbs.db" --exclude "node_modules"\
+			-av "${folders[$fIdx]}" "${clouds[$cIdx]}/" 2>&1 >> $log
+	done
 done
 
 echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Finished sync" >> "$log"
