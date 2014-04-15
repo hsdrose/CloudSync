@@ -3,6 +3,11 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 logsdir="$dir/logs"
 log="$logsdir/output-$(date -u +'%Y%m%d').txt"
 
+if [ ! -f "$dir/excludes.txt" ]; then
+	echo "Unable to find excludes.txt Make sure it exists in the same directory as this script."
+	exit
+fi
+
 mkdir -p "$logsdir"
 echo "########################################################################" >> "$log"
 echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Running cloud-sync" >> "$log"
@@ -11,9 +16,9 @@ echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Using bash version: $BASH_VERSION" >> "$l
 projectsdir="$HOME/Projects"
 
 # Each folder listed here will be synced to all clouds
-folders=( "$HOME/Projects" "$HOME/Documents/Taxes" )
+folders=( "$HOME/Projects" "$HOME/Documents/Taxes" "$HOME/Documents/Expenses" "$HOME/Documents/Medical" "$HOME/Documents/Wallet" )
 # All folders listed above get synced to all services listed here
-clouds=( "$HOME/Google Drive" "$HOME/Box Sync" "$HOME/Cloud Drive" "$HOME/Dropbox" )
+clouds=( "$HOME/Google Drive" "$HOME/Box Sync" "$HOME/Cloud Drive" "$HOME/Dropbox" "$HOME/SpiderOak Hive" )
 
 for fIdx in "${!folders[@]}"; do
 	for cIdx in "${!clouds[@]}"; do
@@ -22,9 +27,7 @@ for fIdx in "${!folders[@]}"; do
 			mkdir -p "${clouds[$cIdx]}/$(basename ${folders[$fIdx]})"
 		fi
 		echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Syncing to cloud: ${clouds[$cIdx]}" >> "$log"
-		rsync --exclude ".DS_Store" --exclude "*.orig" --exclude "*.bak" \
-			--exclude "._*" --exclude "Thumbs.db" --exclude "node_modules"\
-			-av "${folders[$fIdx]}" "${clouds[$cIdx]}/" 2>&1 >> $log
+		rsync --exclude-from="$dir/excludes.txt" --delete -av "${folders[$fIdx]}" "${clouds[$cIdx]}/" 2>&1 >> $log
 	done
 done
 
