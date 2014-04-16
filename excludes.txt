@@ -3,7 +3,12 @@
 *.bak
 ._*
 Thumbs.db
+ehthumbs.db
+.SyncIgnore
+.SyncArchive
+.SyncID
 Desktop.ini
 .Spotlight-V100
 .Trashes
 node_modules
+.sass-cache
