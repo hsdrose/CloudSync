@@ -1,5 +1,9 @@
 # This file gets sourced by sync.sh It should be renamed as config.example.sh
 
+# Depending on how cron runs on your machine, you will probably want to source
+# your .bashrc to ensure your PATH gets built correctly.
+source "$HOME/.bash_profile"
+
 # Key used for encryption & signing only. It should be DIFFERENT from your primary GPG key used for decryption
 # This MUST be the 8-character short key, which can be found by running "gpg --list-keys"
 gpgEncryptionKeyId=
