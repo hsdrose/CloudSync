@@ -6,6 +6,7 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 logsdir="$dir/logs"
 log="$logsdir/output-$(date -u +'%Y%m%d').txt"
 syncPrefix=".CloudSync_"
+source "$dir/config.sh"
 
 if [ ! -f "$dir/excludes.txt" ]; then
 	echo "Unable to find excludes.txt This is required for the script to run. Make sure it exists in the same directory as this script." | tee -a "$log"
@@ -13,16 +14,15 @@ if [ ! -f "$dir/excludes.txt" ]; then
 fi
 
 if [ ! $(command -v duplicity) ]; then
-	echo "duplicity is required but is not installed! This is available via most package managers such as APT or Homebrew. Install and try again."
+	echo "duplicity is required but is not installed! This is available via most package managers such as APT or Homebrew. Install and try again." | tee -a "$log"
 	exit 1
 fi
 
 if [ ! -f "$dir/config.sh" ]; then
-	echo "Unable to find $dir/config.sh. Make sure it exists and try again."
+	echo "Unable to find $dir/config.sh. Make sure it exists and try again." | tee -a "$log"
 	exit 1
 fi
 
-source "$dir/config.sh"
 export PASSPHRASE="$gpgEncryptionKeyPassphrase"
 export SIGN_PASSPHRASE="$gpgEncryptionKeyPassphrase"
 
@@ -48,8 +48,8 @@ for fIdx in "${!folders[@]}"; do
 			echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Directory does not exist. Creating ${clouds[$cIdx]}/$(basename ${folders[$fIdx]})" | tee -a "$log"
 			mkdir -vp "${clouds[$cIdx]}/$(basename ${folders[$fIdx]})"
 		fi
-		echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Syncing to cloud: ${clouds[$cIdx]}" | tee -a "$log"
-		cp -rv "${backupLocation}"/** "${clouds[$cIdx]}/$(basename ${folders[$fIdx]})/"
+		echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') Syncing to cloud folder: ${clouds[$cIdx]}" | tee -a "$log"
+		rsync --delete -av "${backupLocation}"/** "${clouds[$cIdx]}/$(basename ${folders[$fIdx]})/" | tee -a "$log"
 	done
 done
 
